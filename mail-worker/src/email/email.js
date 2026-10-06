@@ -177,9 +177,24 @@ export async function email(message, env, ctx) {
 		//转发到其他邮箱
 		if (forwardStatus === settingConst.forwardStatus.OPEN && forwardEmail) {
 
-			const emails = forwardEmail.split(',');
+			// 支持 1 对 1 映射：源地址=>目标地址；普通地址保持原有行为（全部转发）
+			const toAddr = (message.to || '').toString().trim().toLowerCase();
+			const targets = new Set();
 
-			await Promise.all(emails.map(async email => {
+			for (const item of forwardEmail.split(',')) {
+				const entry = item.trim();
+				if (!entry) continue;
+				const sep = entry.indexOf('=>');
+				if (sep > 0) {
+					const src = entry.slice(0, sep).trim().toLowerCase();
+					const dst = entry.slice(sep + 2).trim();
+					if (src && dst && src === toAddr) targets.add(dst);
+				} else {
+					targets.add(entry);
+				}
+			}
+
+			await Promise.all([...targets].map(async email => {
 
 				try {
 					await message.forward(email);
