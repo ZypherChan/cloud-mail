@@ -1309,19 +1309,10 @@ function emailAddTag(val) {
   forwardEmail.value.splice(forwardEmail.value.length - 1, 1)
 
   emails.forEach(email => {
-    if (isForwardTarget(email) && !forwardEmail.value.includes(email)) {
+    if (isEmail(email) && !forwardEmail.value.includes(email)) {
       forwardEmail.value.push(email)
     }
   })
-}
-
-// 转发目标：普通邮箱，或 src=>dst 的 1 对 1 映射
-function isForwardTarget(val) {
-  const sep = val.indexOf('=>');
-  if (sep > 0) {
-    return isEmail(val.slice(0, sep).trim()) && isEmail(val.slice(sep + 2).trim());
-  }
-  return isEmail(val);
 }
 
 function ruleEmailAddTag(val) {
